@@ -1,24 +1,4 @@
-# solves the equation Ax = b
-
-# 1. form the augmented matrix [A b]
-# 2. perform row operations -> row echelon form
-# 3. determine if the equation has a trivial or non trivial solution
-# 4. 
-
-# operations are too expensive
-# function row_switching_matrix(n, a, b) # rows a and b, number of rows n
-#     m = zeros(n, n)
-#     for i in 1:n
-#         m[i, i] = 1
-#     end
-#     m[a, a] = 0
-#     m[a, b] = 1
-#     m[b, b] = 0
-#     m[b, a] = 1
-#     return m
-# end
-export switch!, gaussian_elimination, multiply_then_add!, multiply!, sort_by_zeros!
-
+export gaussian_elimination
 # switches rows a and b
 function switch!(A, a, b)
     for i in axes(A)[2]
@@ -38,6 +18,17 @@ function multiply!(A, a, multiplier)
     for i in axes(A)[2]
         A[a, i] *= multiplier
     end
+end
+
+function trailing_zeros(A, a)
+    count = 0
+    for i in size(A)[2]:-1:1
+        if A[a, i] != 0
+            break
+        end
+        count += 1
+    end
+    return count
 end
 
 function leading_zeros(A, a)
@@ -72,10 +63,45 @@ function sort_by_zeros!(A)
 end
 
 function gaussian_elimination(A, b) 
-    size = size(A)
-    if size[1] != size(b)[1]
+    s = size(A)
+    if s[1] != size(b)[1]
         error("Dimensions of A and b don't match")
+    elseif s[1] < size(b)[1]
+        error("Not enough equations compared to the number of variables")
     end
-    augmented = hcat(A, b)
 
+    augmented = Matrix{Float64}(hcat(A, b))
+
+    sort_by_zeros!(augmented)
+    if leading_zeros(A, s[1]) == s[2] && count(==(s[2]), num_zeros)
+        error("There is no unique solution")
+    end
+
+    for i in axes(A)[1]
+        for j in i+1:s[1]
+            if leading_zeros(augmented, j) == j-1
+                continue
+            end
+
+            multiply_then_add!(augmented, i, j, -augmented[j, i]/augmented[i, i])
+        end
+    end
+
+    for i in s[1]:-1:1
+        for j in i-1:-1:1
+            if trailing_zeros(augmented, j) == s[2]-j
+                continue
+            end
+
+            multiply_then_add!(augmented, i, j, -augmented[j, i]/augmented[i, i])
+        end
+    end
+
+    solution = Vector{Float64}()
+
+    for i in axes(A)[1]
+        push!(solution, augmented[i, end]/augmented[i, i])
+    end
+
+    return solution
 end
