@@ -28,21 +28,18 @@ function LU(A::AbstractMatrix) # iterative method
             # from L, [i, 1:j-1] .* from U, [1:i, j] + [i, j+1:s] .*  [j+1:s, i]
             # L[i, j] = (A[i, j] - sum from above) / U[j, i]
             if j < i
-                left = (L[i, 1:j-1] .* U[1:i-1, j]) |> sum
-                right = (L[i, j+1:end] .* U[i+1:end, j]) |> sum
+                left = (L[i, 1:j-1] .* U[1:j-1, j]) |> sum
+                right = (L[i, j+1:end] .* U[j+1:end, j]) |> sum
                 L[i, j] = (A[i, j] - (left + right)) / U[j, j]
             else
                 # figure out U
-                up = (L[i, 1:j-1] .* U[1:i-1, j]) |> sum
-                down = (L[i, j+1:end] .* U[i+1:end, j]) |> sum
+                up = (L[i, 1:i-1] .* U[1:i-1, j]) |> sum
+                down = (L[i, i+1:end] .* U[i+1:end, j]) |> sum
                 U[i, j] = (A[i, j] - (up + down)) / L[j, j]
             end
         end 
     end
-    print("L: ")
-    println(L)
-    print("U: ")
-    println(U)
+    return (L, U)
 end
 
 
@@ -66,7 +63,7 @@ end
 
 
 
-
+    # for recursive lu decomposition
     # a = A[1, 1]
     # w_transpose = A[1, 2:end]
     # v = A[2:end, 1]
