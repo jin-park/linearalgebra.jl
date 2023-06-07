@@ -18,6 +18,14 @@ pkg> using LinearAlgebra
 
 Press "]" to go into pkg mode in the Julia REPL
 
+## Relevant functions
+
+```julia
+gaussian_elimination(A, b)
+LU(A::AbstractMatrix)
+sys_of_linear_eqs(A, b)
+```
+
 ## Note
 
 This package is unoptimized for performance and probably too slow for any real world usage. Publishing on github just for fun ;) 
